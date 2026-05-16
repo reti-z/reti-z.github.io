@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Populasi Indonesia per Provinsi 2025 | Data BPS</title>
+  <meta name="description" content="Visualisasi data populasi Indonesia per provinsi tahun 2025 berdasarkan proyeksi Badan Pusat Statistik (BPS)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* HEADER */
+    .header {
+      margin-bottom: 2.5rem;
+    }
+
+    .header-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: #6366f1;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #13131f;
+      border: 1px solid #1e1e30;
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4b5563;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e8e8f0;
+    }
+
+    .stat-value.accent { color: #6366f1; }
+
+    /* CONTROLS */
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #4b5563;
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: #13131f;
+      border: 1px solid #1e1e30;
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+      color: #e8e8f0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #6366f1;
+    }
+
+    input[type="text"]::placeholder { color: #374151; }
+
+    .sort-buttons {
+      display: flex;
+      background: #13131f;
+      border: 1px solid #1e1e30;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .sort-btn {
+      padding: 0.7rem 0.9rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      background: transparent;
+      border: none;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .sort-btn:not(:last-child) {
+      border-right: 1px solid #1e1e30;
+    }
+
+    .sort-btn.active {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    /* RESULT COUNT */
+    .result-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: #374151;
+      margin-bottom: 1rem;
+    }
+
+    .result-count span { color: #6366f1; }
+
+    /* CHART */
+    .chart-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2rem 180px 1fr 90px;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      background: #0d0d18;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+      animation: fadeIn 0.3s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chart-row:hover {
+      background: #13131f;
+      border-color: #1e1e30;
+    }
+
+    .rank {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: #374151;
+      text-align: right;
+    }
+
+    .prov-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #c4c4d4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-wrap {
+      height: 8px;
+      background: #1a1a28;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pop-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: #9ca3af;
+      text-align: right;
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 3rem;
+      color: #374151;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e1e30;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: #374151;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .chart-row { grid-template-columns: 1.5rem 130px 1fr 70px; gap: 0.5rem; }
+      .prov-name { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-tag">// Proyeksi BPS 2025</div>
+      <h1>Populasi <span>Indonesia</span><br>per Provinsi</h1>
+      <p class="subtitle">38 provinsi · satuan: ribu jiwa</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Nasional</div>
+        <div class="stat-value accent" id="totalNasional">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Terbanyak</div>
+        <div class="stat-value" id="terbanyak">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tersedikit</div>
+        <div class="stat-value" id="tersedikit">-</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Cari provinsi..."
+        />
+      </div>
+      <div class="sort-buttons">
+        <button class="sort-btn active" data-sort="desc">↓ Terbanyak</button>
+        <button class="sort-btn" data-sort="asc">↑ Tersedikit</button>
+        <button class="sort-btn" data-sort="alpha">A–Z</button>
+      </div>
+    </div>
+
+    <div class="result-count" id="resultCount">
+      Menampilkan <span id="currentCount">38</span> dari <span id="totalCount">38</span> provinsi
+    </div>
+
+    <!-- Chart List -->
+    <div class="chart-list" id="chartList"></div>
+
+    <footer class="footer">
+      Sumber: Badan Pusat Statistik (BPS) · Proyeksi Penduduk 2025
+    </footer>
+  </div>
+
+  <script>
+    // Data BPS 2025 - Jumlah Penduduk per Provinsi (dalam ribu jiwa)
+    const rawData = [
+      { provinsi: "Aceh", penduduk: 5457.2 },
+      { provinsi: "Sumatera Utara", penduduk: 15414.8 },
+      { provinsi: "Sumatera Barat", penduduk: 5639.0 },
+      { provinsi: "Riau", penduduk: 7126.5 },
+      { provinsi: "Jambi", penduduk: 3763.9 },
+      { provinsi: "Sumatera Selatan", penduduk: 8734.5 },
+      { provinsi: "Bengkulu", penduduk: 2110.1 },
+      { provinsi: "Lampung", penduduk: 9311.3 },
+      { provinsi: "Kep. Bangka Belitung", penduduk: 1554.5 },
+      { provinsi: "Kepulauan Riau", penduduk: 2318.5 },
+      { provinsi: "DKI Jakarta", penduduk: 11249.5 },
+      { provinsi: "Jawa Barat", penduduk: 50337.7 },
+      { provinsi: "Jawa Tengah", penduduk: 37032.8 },
+      { provinsi: "DI Yogyakarta", penduduk: 3984.3 },
+      { provinsi: "Jawa Timur", penduduk: 41774.9 },
+      { provinsi: "Banten", penduduk: 12205.7 },
+      { provinsi: "Bali", penduduk: 4452.4 },
+      { provinsi: "Nusa Tenggara Barat", penduduk: 5513.9 },
+      { provinsi: "Nusa Tenggara Timur", penduduk: 5873.5 },
+      { provinsi: "Kalimantan Barat", penduduk: 5558.4 },
+      { provinsi: "Kalimantan Tengah", penduduk: 2793.1 },
+      { provinsi: "Kalimantan Selatan", penduduk: 4404.2 },
+      { provinsi: "Kalimantan Timur", penduduk: 4042.4 },
+      { provinsi: "Kalimantan Utara", penduduk: 780.6 },
+      { provinsi: "Sulawesi Utara", penduduk: 2692.6 },
+      { provinsi: "Sulawesi Tengah", penduduk: 3240.6 },
+      { provinsi: "Sulawesi Selatan", penduduk: 9416.6 },
+      { provinsi: "Sulawesi Tenggara", penduduk: 2827.0 },
+      { provinsi: "Gorontalo", penduduk: 1210.0 },
+      { provinsi: "Sulawesi Barat", penduduk: 1453.5 },
+      { provinsi: "Maluku", penduduk: 1957.7 },
+      { provinsi: "Maluku Utara", penduduk: 1339.9 },
+      { provinsi: "Papua Barat", penduduk: 1008.9 },
+      { provinsi: "Papua Barat Daya", penduduk: 673.5 },
+      { provinsi: "Papua", penduduk: 1064.3 },
+      { provinsi: "Papua Pegunungan", penduduk: 1363.5 },
+      { provinsi: "Papua Tengah", penduduk: 1025.6 },
+      { provinsi: "Papua Selatan", penduduk: 410.3 },
+    ];
+
+    let searchQuery = '';
+    let sortOrder = 'desc';
+
+    // Utility functions
+    function fmt(n) {
+      return n.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    }
+
+    function fmtJuta(n) {
+      if (n >= 1000) return (n / 1000).toFixed(2) + ' jt';
+      return fmt(n) + ' rb';
+    }
+
+    function barWidth(n, maxPenduduk) {
+      return (n / maxPenduduk) * 100;
+    }
+
+    function rankColor(i, total) {
+      const ratio = i / total;
+      if (ratio < 0.15) return '#ef4444';
+      if (ratio < 0.35) return '#f97316';
+      if (ratio < 0.60) return '#eab308';
+      return '#22c55e';
+    }
+
+    // Calculate stats
+    const maxPenduduk = Math.max(...rawData.map(d => d.penduduk));
+    const totalPenduduk = rawData.reduce((s, d) => s + d.penduduk, 0);
+    const terbanyakProv = rawData.find(d => d.penduduk === maxPenduduk);
+    const tersedikitProv = rawData.reduce((a, b) => a.penduduk < b.penduduk ? a : b);
+
+    // Update stats display
+    document.getElementById('totalNasional').textContent = fmt(totalPenduduk) + ' rb';
+    document.getElementById('terbanyak').textContent = terbanyakProv.provinsi.split(' ').slice(-2).join(' ');
+    document.getElementById('tersedikit').textContent = tersedikitProv.provinsi.split(' ').slice(-1)[0];
+
+    // Filter and sort data
+    function getFilteredAndSorted() {
+      let filtered = rawData.filter(d =>
+        d.provinsi.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      let sorted = [...filtered].sort((a, b) => {
+        if (sortOrder === 'asc') return a.penduduk - b.penduduk;
+        if (sortOrder === 'desc') return b.penduduk - a.penduduk;
+        return a.provinsi.localeCompare(b.provinsi, 'id');
+      });
+
+      return sorted;
+    }
+
+    // Render chart
+    function renderChart() {
+      const sorted = getFilteredAndSorted();
+      const chartList = document.getElementById('chartList');
+      
+      document.getElementById('currentCount').textContent = sorted.length;
+      document.getElementById('totalCount').textContent = rawData.length;
+
+      if (sorted.length === 0) {
+        chartList.innerHTML = '<div class="empty">Provinsi tidak ditemukan</div>';
+        return;
+      }
+
+      chartList.innerHTML = sorted.map((d, i) => `
+        <div class="chart-row" style="animation-delay: ${i * 18}ms">
+          <div class="rank">${i + 1}</div>
+          <div class="prov-name" title="${d.provinsi}">${d.provinsi}</div>
+          <div class="bar-wrap">
+            <div
+              class="bar-fill"
+              style="width: ${barWidth(d.penduduk, maxPenduduk)}%; background: ${rankColor(i, sorted.length)}"
+            ></div>
+          </div>
+          <div class="pop-value">${fmtJuta(d.penduduk)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderChart();
+    });
+
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sortOrder = btn.dataset.sort;
+        renderChart();
+      });
+    });
+
+    // Initial render
+    renderChart();
+  </script>
+</body>
+</html>
